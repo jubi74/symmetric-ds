@@ -345,12 +345,33 @@ public class ModelComparator {
         if (!compatible && targetColumn.getMappedTypeCode() != sourceColumn.getMappedTypeCode()
                 && platformInfo.getTargetJdbcType(targetColumn.getMappedTypeCode()) != sourceColumn
                         .getMappedTypeCode()) {
-            log.debug(
-                    "The {} column on the {} table changed type codes from {} to {} ",
-                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
-                            sourceColumn.getMappedTypeCode(), targetColumn.getMappedTypeCode() });
-            changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
-                    .getMappedTypeCode()));
+        	
+        	// 10.09.2019 jubi check ddl Builder output for column
+        	String ddlString = ddlBuilder.getColumnTypeDdl(targetTable, targetColumn);
+            if (ddlString.contains("DATE") && ddlString.length() > 4)
+            {
+            	ddlString = ddlString.substring(0, ddlString.indexOf(" "));
+            }
+             
+            // 10.09.2019 jubi fix error because conversion from ORACLE DATE to JDBC DATETIME for Transport in XML
+            if (sourceColumn.getMappedType().equals("DATE") && ddlString.equals("DATE") ) {
+                // This is because conversion from XML DATETIME (93) type to ORACLE DATE (91)
+                compatible = true;
+            }
+        	
+            if(!compatible)
+            {
+	            log.debug(
+	                    "The {} column on the {} table changed type codes from {} to {} ",
+	                    new Object[] { sourceColumn.getName(), sourceTable.getName(),
+	                            sourceColumn.getMappedTypeCode(), targetColumn.getMappedTypeCode() });
+	            changes.add(new ColumnDataTypeChange(sourceTable, sourceColumn, targetColumn
+	                    .getMappedTypeCode()));
+	            
+	            //String test = ddlBuilder.getColumnTypeDdl(targetTable, targetColumn);
+	            //System.out.println ("Test: " + test);
+	                      
+            }
         }
 
 
