@@ -420,7 +420,8 @@ public class DbCompare {
         Table targetTable = null;
         
         String catalog = targetEngine.getDatabasePlatform().getDefaultCatalog();
-        String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
+        //String schema = targetEngine.getDatabasePlatform().getDefaultSchema();
+        String schema = tables.getSourceTable().getSchema();
         
         if (config.isUseSymmetricConfig()) {
             TransformTableNodeGroupLink transform = getTransformFor(tables.getSourceTable());
