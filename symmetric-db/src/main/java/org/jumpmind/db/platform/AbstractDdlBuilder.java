@@ -1953,6 +1953,9 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (platformColumn != null) {
             defaultValue = platformColumn.getDefaultValue();
         }
+        //jubi 04.12.19
+        if(defaultValue.equals("SYSDATE"))
+        	defaultValue = "NOW()";
         return defaultValue;
     }
 
@@ -2063,10 +2066,18 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
         if (shouldUseQuotes) {
             // characters are only escaped when within a string literal
             ddl.append(databaseInfo.getValueQuoteToken());
-            ddl.append(escapeStringValue(defaultValueStr));
+          //jubi 04.12.19
+            if(defaultValueStr.toUpperCase().startsWith("SYSDATE"))
+            	ddl.append(escapeStringValue("NOW()"));
+            else
+            	ddl.append(escapeStringValue(defaultValueStr));
             ddl.append(databaseInfo.getValueQuoteToken());
         } else {
-            ddl.append(defaultValueStr);
+        	//jubi 04.12.19
+            if(defaultValueStr.toUpperCase().startsWith("SYSDATE"))
+            	ddl.append(escapeStringValue("NOW()"));
+            else
+            	ddl.append(defaultValueStr);
         }
     }
 
@@ -2459,7 +2470,8 @@ public abstract class AbstractDdlBuilder implements IDdlBuilder {
                 ddl.append(table.getCatalog()).append(".");
             }
             if (StringUtils.isNotBlank(table.getSchema())) {
-                ddl.append(table.getSchema()).append(".");
+            	ddl.append("\"");
+                ddl.append(table.getSchema()).append("\".");
             }
             printIdentifier(getTableName(key.getForeignTableName()), ddl);
             ddl.append(" (");
